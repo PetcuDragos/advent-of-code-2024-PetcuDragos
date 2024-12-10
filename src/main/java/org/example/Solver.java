@@ -16,8 +16,10 @@ public class Solver {
             Map<Integer, Integer> numberToWeight = new HashMap<>();
             processOrderingRulesForUpdate(orderingRules, update, parentToChildren, numberToWeight);
 
-            if (isUpdateOrderedCorrectly(update, numberToWeight)) {
-                middlePageSumForCorrectUpdates += getMiddlePageNumber(update);
+            if (!isUpdateOrderedCorrectly(update, numberToWeight)) {
+                List<Integer> sortedUpdate = update.stream()
+                        .sorted(Comparator.comparingInt(numberToWeight::get)).toList();
+                middlePageSumForCorrectUpdates += getMiddlePageNumber(sortedUpdate);
             }
         }
 

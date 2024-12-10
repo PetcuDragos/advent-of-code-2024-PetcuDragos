@@ -11,13 +11,13 @@ public class SolverTest {
     public void testInput1() {
         String fileName = "input1.txt";
         int middlePageSumForCorrectUpdates = solver.computeMiddlePageSumForCorrectUpdates(fileName);
-        assertEquals(143, middlePageSumForCorrectUpdates);
+        assertEquals(123, middlePageSumForCorrectUpdates);
     }
 
     @Test
     public void testInput2() {
         String fileName = "input2.txt";
         int middlePageSumForCorrectUpdates = solver.computeMiddlePageSumForCorrectUpdates(fileName);
-        assertEquals(4774, middlePageSumForCorrectUpdates);
+        assertEquals(6004, middlePageSumForCorrectUpdates);
     }
 }
