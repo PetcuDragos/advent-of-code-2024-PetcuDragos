@@ -8,67 +8,85 @@ public class Solver {
     public long computeChecksum(String inputFileName) {
         List<String> lines = FileReaderUtil.readLinesFromFile(inputFileName);
 
-        String diskMap = lines.get(0);
-        List<Integer> memoryBlocks = getMemoryBlocks(diskMap);
-        List<Integer> freeSpaceBlocks = getFreeSpaceBlocks(diskMap);
-
-        return computeChecksum(memoryBlocks, freeSpaceBlocks);
+        List<Integer> diskBlocks = getDiskBlocks(lines.get(0));
+        List<Integer> compactFileSystem = computeCompactFileSystem(diskBlocks);
+        return calculateCheckSum(compactFileSystem);
     }
 
-    private long computeChecksum(List<Integer> memoryBlocks, List<Integer> freeSpaceBlocks) {
-        int memoryBlockIndex = 0;
-        int blockPosition = 0;
+    private List<Integer> computeCompactFileSystem(List<Integer> diskBlocks) {
+        List<Integer> compactFileSystem = new ArrayList<>();
+        int diskBlockIndex = 0;
+
+        while (diskBlockIndex < diskBlocks.size()) {
+
+            if (isDiskBlockCompletelyProcessed(diskBlocks, diskBlockIndex)) {
+                diskBlockIndex++;
+            } else {
+                processBlock(diskBlocks, diskBlockIndex, compactFileSystem);
+            }
+        }
+        return compactFileSystem;
+    }
+
+    private void processBlock(List<Integer> diskBlocks, int diskBlockIndex, List<Integer> compactFileSystem) {
+        decrementDiskBlockProcesses(diskBlocks, diskBlockIndex);
+
+        if (isMemoryDiskBlock(diskBlockIndex)) {
+            compactFileSystem.add(getFileSystemId(diskBlockIndex));
+        } else {
+            int lastAvailableMemoryBlockIndex = getLastAvailableMemoryBlockIndex(diskBlocks);
+
+            if (lastAvailableMemoryBlockIndex == -1) {
+                return;
+            }
+
+            processBlock(diskBlocks, lastAvailableMemoryBlockIndex, compactFileSystem);
+        }
+    }
+
+    private int getLastAvailableMemoryBlockIndex(List<Integer> diskBlocks) {
+        for (int blockIndex = diskBlocks.size() - 1; blockIndex >= 0; blockIndex--) {
+            if (isMemoryDiskBlock(blockIndex)) {
+                if (isDiskBlockCompletelyProcessed(diskBlocks, blockIndex)) {
+                    diskBlocks.remove(blockIndex--);
+                    diskBlocks.remove(blockIndex);
+                } else {
+                    return blockIndex;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private void decrementDiskBlockProcesses(List<Integer> diskBlocks, int diskBlockIndex) {
+        diskBlocks.set(diskBlockIndex, diskBlocks.get(diskBlockIndex) - 1);
+    }
+
+    private Integer getFileSystemId(int diskBlockIndex) {
+        return diskBlockIndex / 2;
+    }
+
+    private boolean isMemoryDiskBlock(int diskBlockIndex) {
+        return diskBlockIndex % 2 == 0;
+    }
+
+    private boolean isDiskBlockCompletelyProcessed(List<Integer> diskBlocks, int diskBlockIndex) {
+        return diskBlocks.get(diskBlockIndex) == 0;
+    }
+
+    private long calculateCheckSum(List<Integer> compactFileSystem) {
         long checksum = 0;
-
-        while (memoryBlockIndex < memoryBlocks.size()) {
-            int memoryBlock = memoryBlocks.get(memoryBlockIndex);
-            int freeSpaceBlock = freeSpaceBlocks.size() > memoryBlockIndex ? freeSpaceBlocks.get(memoryBlockIndex) : 0;
-
-            while (memoryBlock > 0) {
-                checksum += (long) blockPosition * memoryBlockIndex;
-                blockPosition++;
-                memoryBlock--;
-            }
-
-            if (memoryBlocks.size() - 1 == memoryBlockIndex) break;
-            while (freeSpaceBlock > 0) {
-                int lastMemoryAvailable = getLastMemoryAvailable(memoryBlocks);
-                checksum += (long) blockPosition * lastMemoryAvailable;
-                blockPosition++;
-                freeSpaceBlock--;
-            }
-
-            memoryBlockIndex++;
+        for (int index = 0; index < compactFileSystem.size(); index++) {
+            checksum += (long) index * compactFileSystem.get(index);
         }
         return checksum;
     }
 
-    private int getLastMemoryAvailable(List<Integer> memoryBlocks) {
-        Integer lastMemoryBlock = memoryBlocks.get(memoryBlocks.size() - 1);
-        while (lastMemoryBlock == 0) {
-            memoryBlocks.remove(memoryBlocks.size() - 1);
-            if (memoryBlocks.size() == 0) return 0;
-            lastMemoryBlock = memoryBlocks.get(memoryBlocks.size() - 1);
+    private List<Integer> getDiskBlocks(String diskMap) {
+        List<Integer> diskBlocks = new ArrayList<>();
+        for (int index = 0; index < diskMap.length(); index++) {
+            diskBlocks.add(Integer.parseInt(String.valueOf(diskMap.charAt(index))));
         }
-        memoryBlocks.set(memoryBlocks.size() - 1, memoryBlocks.get(memoryBlocks.size() - 1) - 1);
-        return memoryBlocks.size() - 1;
+        return diskBlocks;
     }
-
-    private List<Integer> getMemoryBlocks(String diskMap) {
-        List<Integer> memoryBlocks = new ArrayList<>();
-        for (int index = 0; index < diskMap.length(); index += 2) {
-            memoryBlocks.add(Integer.parseInt(String.valueOf(diskMap.charAt(index))));
-        }
-        return memoryBlocks;
-    }
-
-    private List<Integer> getFreeSpaceBlocks(String diskMap) {
-        List<Integer> freeSpaceBlocks = new ArrayList<>();
-        for (int index = 1; index < diskMap.length(); index += 2) {
-            freeSpaceBlocks.add(Integer.parseInt(String.valueOf(diskMap.charAt(index))));
-        }
-        return freeSpaceBlocks;
-    }
-
-
 }
