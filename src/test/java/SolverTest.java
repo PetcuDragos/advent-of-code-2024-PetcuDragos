@@ -10,14 +10,14 @@ public class SolverTest {
     @Test
     public void testInput1() {
         String fileName = "input1.txt";
-        long trailheadScores = solver.computeTrailheadScores(fileName);
-        assertEquals(36, trailheadScores);
+        long trailheadRatings = solver.computeTrailheadRatings(fileName);
+        assertEquals(81, trailheadRatings);
     }
 
     @Test
     public void testInput2() {
         String fileName = "input2.txt";
-        long trailheadScores = solver.computeTrailheadScores(fileName);
-        assertEquals(430, trailheadScores);
+        long trailheadRatings = solver.computeTrailheadRatings(fileName);
+        assertEquals(928, trailheadRatings);
     }
 }

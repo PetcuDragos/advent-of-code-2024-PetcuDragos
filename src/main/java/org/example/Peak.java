@@ -1,26 +1,23 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Peak {
     private final int height;
-    private final List<Integer> visitors;
+    private int visits;
 
     public Peak(int height) {
         this.height = height;
-        visitors = new ArrayList<>();
+        visits = 0;
     }
 
     public int getHeight() {
         return height;
     }
 
-    public List<Integer> getVisitors() {
-        return visitors;
+    public int getVisits() {
+        return visits;
     }
 
-    public void addVisitor(int visitorIndex) {
-        visitors.add(visitorIndex);
+    public void increaseNumberOfVisits() {
+        visits++;
     }
 }
